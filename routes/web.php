@@ -12,6 +12,7 @@ use App\Http\Controllers\Coach\ReporteEquipoController as CoachReporteController
 use App\Http\Controllers\Admin\ReporteEquipoController as AdminReporteController;
 use App\Http\Controllers\Admin\BalanceController;
 use App\Http\Controllers\Admin\MembresiaController;
+use App\Http\Controllers\Admin\EmpleadoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,87 +25,83 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 /*
 |--------------------------------------------------------------------------
-| RUTAS AUTENTICADAS - DASHBOARD
+| RUTAS AUTENTICADAS (Requieren estar logueado)
 |--------------------------------------------------------------------------
 */
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware('auth')->group(function () {
 
-/*
-|--------------------------------------------------------------------------
-| CLIENTES - CRUD COMPLETO (Resource) - Recepcionista y Admin
-|--------------------------------------------------------------------------
-*/
-Route::resource('clientes', ClienteController::class)->except(['show']);
+    // DASHBOARD
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
+    /*
+    |--------------------------------------------------------------------------
+    | CLIENTES Y VENTAS - Recepcionista y Admin
+    |--------------------------------------------------------------------------
+    */
+    Route::middleware('role:admin,recepcionista')->group(function () {
+        // Clientes
+        Route::resource('clientes', ClienteController::class)->except(['show']);
+        Route::get('/clientes/{cliente}', [ClienteController::class, 'show'])->name('clientes.show');
+        Route::post('/clientes/{cliente}/vender-membresia', [ClienteController::class, 'venderMembresia'])->name('clientes.vender-membresia');
+        Route::post('/clientes/{cliente}/cancelar-membresia', [ClienteController::class, 'cancelarMembresia'])->name('clientes.cancelar-membresia');
+        Route::post('/clientes/{cliente}/asignar-coach', [ClienteController::class, 'asignarCoach'])->name('clientes.asignar-coach');
+        Route::post('/clientes/{cliente}/quitar-coach', [ClienteController::class, 'quitarCoach'])->name('clientes.quitar-coach');
 
-Route::post('/clientes/{cliente}/vender-membresia', [ClienteController::class, 'venderMembresia'])
-    ->name('clientes.vender-membresia');
+        // Ventas
+        Route::get('/ventas/crear', [VentaController::class, 'create'])->name('ventas.create');
+        Route::post('/ventas', [VentaController::class, 'store'])->name('ventas.store');
+        Route::get('/ventas', [VentaController::class, 'index'])->name('ventas.index');
+        Route::get('/ventas/{venta}', [VentaController::class, 'show'])->name('ventas.show');
+    });
 
-Route::post('/clientes/{cliente}/cancelar-membresia', [ClienteController::class, 'cancelarMembresia'])
-    ->name('clientes.cancelar-membresia');
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - PRODUCTOS, MEMBRESÍAS, BALANCE Y REPORTES
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        Route::resource('productos', ProductoController::class);
+        Route::post('/productos/{producto}/reponer-stock', [ProductoController::class, 'reponerStock'])->name('productos.reponer-stock');
 
-Route::post('/clientes/{cliente}/asignar-coach', [ClienteController::class, 'asignarCoach'])
-    ->name('clientes.asignar-coach');
+        // Membresías (gestión)
+        Route::get('/membresias', [MembresiaController::class, 'index'])->name('membresias.index');
+        Route::post('/membresias', [MembresiaController::class, 'store'])->name('membresias.store');
+        Route::put('/membresias/{membresia}', [MembresiaController::class, 'update'])->name('membresias.update');
 
-Route::post('/clientes/{cliente}/quitar-coach', [ClienteController::class, 'quitarCoach'])
-    ->name('clientes.quitar-coach');
+        // Balance
+        Route::get('/balance', [BalanceController::class, 'index'])->name('balance.index');
 
-/*
-|--------------------------------------------------------------------------
-| VENTAS DE PRODUCTOS - Recepcionista y Admin
-|--------------------------------------------------------------------------
-*/
-Route::get('/ventas/crear', [VentaController::class, 'create'])->name('ventas.create');
-Route::post('/ventas', [VentaController::class, 'store'])->name('ventas.store');
-Route::get('/ventas', [VentaController::class, 'index'])->name('ventas.index');
-Route::get('/ventas/{venta}', [VentaController::class, 'show'])->name('ventas.show');
+        // Reportes de equipo
+        Route::get('/reportes', [AdminReporteController::class, 'index'])->name('reportes.index');
+        Route::get('/reportes/{reporteEquipo}', [AdminReporteController::class, 'show'])->name('reportes.show');
+        Route::put('/reportes/{reporteEquipo}/estado', [AdminReporteController::class, 'updateEstado'])->name('reportes.update-estado');
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN - PRODUCTOS (Resource)
-|--------------------------------------------------------------------------
-*/
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('productos', ProductoController::class);
+        // Gestión de Empleados (Recepcionistas y Coaches)
+        Route::resource('empleados', EmpleadoController::class);
+    });
 
-    Route::post('/productos/{producto}/reponer-stock', [ProductoController::class, 'reponerStock'])
-        ->name('productos.reponer-stock');
+    /*
+    |--------------------------------------------------------------------------
+    | COACH - MIS CLIENTES, RUTINAS Y REPORTES
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('coach')->name('coach.')->middleware('role:coach')->group(function () {
+        Route::get('/clientes', [CoachClienteController::class, 'index'])->name('clientes.index');
+        Route::get('/clientes/{cliente}', [CoachClienteController::class, 'show'])->name('clientes.show');
 
-    // Membresías (gestión)
-    Route::get('/membresias', [MembresiaController::class, 'index'])->name('membresias.index');
-    Route::post('/membresias', [MembresiaController::class, 'store'])->name('membresias.store');
-    Route::put('/membresias/{membresia}', [MembresiaController::class, 'update'])->name('membresias.update');
+        // Rutinas
+        Route::get('/clientes/{cliente}/rutinas/crear', [RutinaController::class, 'create'])->name('rutinas.create');
+        Route::post('/clientes/{cliente}/rutinas', [RutinaController::class, 'store'])->name('rutinas.store');
+        Route::get('/rutinas/{rutina}/editar', [RutinaController::class, 'edit'])->name('rutinas.edit');
+        Route::put('/rutinas/{rutina}', [RutinaController::class, 'update'])->name('rutinas.update');
 
-    // Balance
-    Route::get('/balance', [BalanceController::class, 'index'])->name('balance.index');
-
-    // Reportes de equipo
-    Route::get('/reportes', [AdminReporteController::class, 'index'])->name('reportes.index');
-    Route::get('/reportes/{reporteEquipo}', [AdminReporteController::class, 'show'])->name('reportes.show');
-    Route::put('/reportes/{reporteEquipo}/estado', [AdminReporteController::class, 'updateEstado'])->name('reportes.update-estado');
+        // Reportes de equipo
+        Route::get('/reportes/crear', [CoachReporteController::class, 'create'])->name('reportes.create');
+        Route::post('/reportes', [CoachReporteController::class, 'store'])->name('reportes.store');
+        Route::get('/reportes', [CoachReporteController::class, 'index'])->name('reportes.index');
+    });
 });
 
-/*
-|--------------------------------------------------------------------------
-| COACH - MIS CLIENTES
-|--------------------------------------------------------------------------
-*/
-Route::prefix('coach')->name('coach.')->middleware('role:coach')->group(function () {
-    Route::get('/clientes', [CoachClienteController::class, 'index'])->name('clientes.index');
-    Route::get('/clientes/{cliente}', [CoachClienteController::class, 'show'])->name('clientes.show');
-
-    // Rutinas
-    Route::get('/clientes/{cliente}/rutinas/crear', [RutinaController::class, 'create'])->name('rutinas.create');
-    Route::post('/clientes/{cliente}/rutinas', [RutinaController::class, 'store'])->name('rutinas.store');
-    Route::get('/rutinas/{rutina}/editar', [RutinaController::class, 'edit'])->name('rutinas.edit');
-    Route::put('/rutinas/{rutina}', [RutinaController::class, 'update'])->name('rutinas.update');
-
-    // Reportes de equipo
-    Route::get('/reportes/crear', [CoachReporteController::class, 'create'])->name('reportes.create');
-    Route::post('/reportes', [CoachReporteController::class, 'store'])->name('reportes.store');
-    Route::get('/reportes', [CoachReporteController::class, 'index'])->name('reportes.index');
-});
 
 /*
 |--------------------------------------------------------------------------

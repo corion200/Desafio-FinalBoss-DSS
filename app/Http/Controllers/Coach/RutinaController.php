@@ -14,11 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class RutinaController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:coach');
-    }
 
     /**
      * Crear rutina para un cliente

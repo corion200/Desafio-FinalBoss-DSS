@@ -9,11 +9,6 @@ use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin');
-    }
 
     /**
      * LISTADO DE REGISTROS

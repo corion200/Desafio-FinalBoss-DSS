@@ -16,11 +16,6 @@ use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin,recepcionista');
-    }
 
     /**
      * LISTADO DE REGISTROS - Página principal del recurso
@@ -78,7 +73,25 @@ class ClienteController extends Controller
      */
     public function store(ClienteRequest $request)
     {
-        $cliente = Cliente::create($request->validated());
+        if ($request->filled('telefono')) {
+            if (!preg_match('/^[0-9\s\-]+$/', $request->telefono)) {
+                return back()->withErrors(['telefono' => 'El teléfono solo debe contener números, espacios o guiones.'])->withInput();
+            }
+
+            $digits = preg_replace('/[^0-9]/', '', $request->telefono);
+            if (strlen($digits) !== 8) {
+                return back()->withErrors(['telefono' => 'El teléfono debe contener exactamente 8 números (ej. 1234-5678).'])->withInput();
+            }
+
+            $telefono = substr($digits, 0, 4) . '-' . substr($digits, 4, 4);
+        } else {
+            $telefono = null;
+        }
+
+        $data = $request->validated();
+        $data['telefono'] = $telefono;
+
+        $cliente = Cliente::create($data);
 
         return redirect()
             ->route('clientes.show', $cliente)
@@ -132,7 +145,25 @@ class ClienteController extends Controller
      */
     public function update(ClienteRequest $request, Cliente $cliente)
     {
-        $cliente->update($request->validated());
+        if ($request->filled('telefono')) {
+            if (!preg_match('/^[0-9\s\-]+$/', $request->telefono)) {
+                return back()->withErrors(['telefono' => 'El teléfono solo debe contener números, espacios o guiones.'])->withInput();
+            }
+
+            $digits = preg_replace('/[^0-9]/', '', $request->telefono);
+            if (strlen($digits) !== 8) {
+                return back()->withErrors(['telefono' => 'El teléfono debe contener exactamente 8 números (ej. 1234-5678).'])->withInput();
+            }
+
+            $telefono = substr($digits, 0, 4) . '-' . substr($digits, 4, 4);
+        } else {
+            $telefono = null;
+        }
+
+        $data = $request->validated();
+        $data['telefono'] = $telefono;
+
+        $cliente->update($data);
 
         return redirect()
             ->route('clientes.show', $cliente)

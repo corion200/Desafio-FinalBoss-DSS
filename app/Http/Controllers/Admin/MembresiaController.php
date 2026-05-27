@@ -8,11 +8,6 @@ use Illuminate\Http\Request;
 
 class MembresiaController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin');
-    }
 
     public function index()
     {

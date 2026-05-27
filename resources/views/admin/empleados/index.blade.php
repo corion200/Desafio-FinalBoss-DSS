@@ -1,12 +1,12 @@
 @extends('layouts.app')
 
-@section('title', 'Inventario de Productos')
+@section('title', 'Gestión de Empleados')
 
 @section('content')
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-800">Inventario de Productos</h1>
-    <a href="{{ route('admin.productos.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition shadow-sm">
-        + Nuevo Producto
+    <h1 class="text-2xl font-bold text-gray-800">Gestión de Empleados</h1>
+    <a href="{{ route('admin.empleados.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition shadow-sm">
+        + Registrar Empleado
     </a>
 </div>
 
@@ -19,36 +19,34 @@
 
 <!-- Barra de Búsqueda y Filtros -->
 <div class="bg-white rounded-lg shadow p-4 mb-6">
-    <form method="GET" action="{{ route('admin.productos.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+    <form method="GET" action="{{ route('admin.empleados.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
         <!-- Buscar -->
         <div>
             <label for="buscar" class="block text-xs font-medium text-gray-500 mb-1">Buscar</label>
             <input type="text" id="buscar" name="buscar" value="{{ request('buscar') }}" 
-                placeholder="Nombre o descripción..." 
+                placeholder="Nombre, email o teléfono..." 
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 outline-none">
         </div>
 
-        <!-- Categoría -->
+        <!-- Puesto / Rol -->
         <div>
-            <label for="categoria" class="block text-xs font-medium text-gray-500 mb-1">Categoría</label>
-            <select id="categoria" name="categoria" 
+            <label for="role" class="block text-xs font-medium text-gray-500 mb-1">Puesto</label>
+            <select id="role" name="role" 
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 outline-none">
-                <option value="">Todas</option>
-                <option value="suplemento" @if(request('categoria') === 'suplemento') selected @endif>Suplemento</option>
-                <option value="equipamiento" @if(request('categoria') === 'equipamiento') selected @endif>Equipamiento</option>
-                <option value="accesorio" @if(request('categoria') === 'accesorio') selected @endif>Accesorio</option>
-                <option value="ropa" @if(request('categoria') === 'ropa') selected @endif>Ropa</option>
+                <option value="">Todos</option>
+                <option value="recepcionista" @if(request('role') === 'recepcionista') selected @endif>Recepcionista</option>
+                <option value="coach" @if(request('role') === 'coach') selected @endif>Coach</option>
             </select>
         </div>
 
-        <!-- Stock -->
+        <!-- Estado -->
         <div>
-            <label for="stock_status" class="block text-xs font-medium text-gray-500 mb-1">Stock</label>
-            <select id="stock_status" name="stock_status" 
+            <label for="estado" class="block text-xs font-medium text-gray-500 mb-1">Estado</label>
+            <select id="estado" name="estado" 
                 class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-1 focus:ring-green-500 focus:border-green-500 outline-none">
                 <option value="">Todos</option>
-                <option value="con_stock" @if(request('stock_status') === 'con_stock') selected @endif>Con Stock</option>
-                <option value="sin_stock" @if(request('stock_status') === 'sin_stock') selected @endif>Sin Stock</option>
+                <option value="activo" @if(request('estado') === 'activo') selected @endif>Activo</option>
+                <option value="inactivo" @if(request('estado') === 'inactivo') selected @endif>Inactivo</option>
             </select>
         </div>
 
@@ -57,8 +55,8 @@
             <button type="submit" class="flex-1 bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                 Filtrar
             </button>
-            @if(request()->anyFilled(['buscar', 'categoria', 'stock_status']))
-                <a href="{{ route('admin.productos.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition text-center">
+            @if(request()->anyFilled(['buscar', 'role', 'estado']))
+                <a href="{{ route('admin.empleados.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition text-center">
                     Limpiar
                 </a>
             @endif
@@ -66,48 +64,49 @@
     </form>
 </div>
 
-<!-- Tabla de Productos -->
+<!-- Tabla de Empleados -->
 <div class="bg-white rounded-lg shadow overflow-hidden">
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead class="bg-gray-50 border-b">
                 <tr>
                     <th class="px-6 py-3 text-left font-semibold text-gray-600">Nombre</th>
-                    <th class="px-6 py-3 text-left font-semibold text-gray-600">Categoría</th>
-                    <th class="px-6 py-3 text-right font-semibold text-gray-600">Precio</th>
-                    <th class="px-6 py-3 text-center font-semibold text-gray-600">Stock</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-600">Correo Electrónico</th>
+                    <th class="px-6 py-3 text-center font-semibold text-gray-600">Puesto</th>
+                    <th class="px-6 py-3 text-left font-semibold text-gray-600">Teléfono</th>
                     <th class="px-6 py-3 text-center font-semibold text-gray-600">Estado</th>
                     <th class="px-6 py-3 text-center font-semibold text-gray-600">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y">
-                @forelse($productos as $producto)
+                @forelse($empleados as $empleado)
                 <tr class="hover:bg-gray-50 transition-colors">
                     <td class="px-6 py-4">
                         <div class="font-medium text-gray-900">
-                            <a href="{{ route('admin.productos.show', $producto) }}" class="hover:text-green-600 transition">
-                                {{ $producto->nombre }}
+                            <a href="{{ route('admin.empleados.show', $empleado) }}" class="hover:text-green-600 transition">
+                                {{ $empleado->name }}
                             </a>
                         </div>
-                        @if($producto->descripcion)
-                            <div class="text-xs text-gray-500 max-w-xs truncate">{{ $producto->descripcion }}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">
+                        {{ $empleado->email }}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        @if($empleado->role === 'coach')
+                            <span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
+                                Coach
+                            </span>
+                        @else
+                            <span class="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                                Recepcionista
+                            </span>
                         @endif
                     </td>
-                    <td class="px-6 py-4">
-                        <span class="px-2 py-1 bg-gray-100 rounded-full text-xs font-medium text-gray-700">
-                            {{ ucfirst($producto->categoria) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-right font-semibold text-gray-900">
-                        ${{ number_format($producto->precio, 2) }}
+                    <td class="px-6 py-4 text-gray-600">
+                        {{ $empleado->telefono ?? 'N/D' }}
                     </td>
                     <td class="px-6 py-4 text-center">
-                        <span class="font-bold @if($producto->stock <= 3) text-red-600 @else text-gray-800 @endif">
-                            {{ $producto->stock }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        @if($producto->activo)
+                        @if($empleado->activo)
                             <span class="px-2 py-1 bg-green-50 text-green-700 rounded-full text-xs font-medium border border-green-200">
                                 Activo
                             </span>
@@ -119,22 +118,22 @@
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex items-center justify-center space-x-2">
-                            <a href="{{ route('admin.productos.show', $producto) }}" 
+                            <a href="{{ route('admin.empleados.show', $empleado) }}" 
                                 class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">
                                 Ver
                             </a>
-                            <a href="{{ route('admin.productos.edit', $producto) }}" 
+                            <a href="{{ route('admin.empleados.edit', $empleado) }}" 
                                 class="bg-yellow-50 text-yellow-600 hover:bg-yellow-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">
                                 Editar
                             </a>
-                            @if($producto->activo)
-                                <form method="POST" action="{{ route('admin.productos.destroy', $producto) }}" class="inline" 
-                                    onsubmit="return confirm('¿Está seguro de eliminar este producto?')">
+                            @if($empleado->activo)
+                                <form method="POST" action="{{ route('admin.empleados.destroy', $empleado) }}" class="inline" 
+                                    onsubmit="return confirm('¿Está seguro de desactivar a este empleado? Perderá el acceso al sistema.')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 
                                         class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-medium transition">
-                                        Eliminar
+                                        Desactivar
                                     </button>
                                 </form>
                             @endif
@@ -144,7 +143,7 @@
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-10 text-center text-gray-400">
-                        No se encontraron productos en el inventario.
+                        No se encontraron empleados en el sistema.
                     </td>
                 </tr>
                 @endforelse
@@ -153,9 +152,9 @@
     </div>
 
     <!-- Paginación -->
-    @if($productos->hasPages())
+    @if($empleados->hasPages())
         <div class="p-4 border-t bg-gray-50">
-            {{ $productos->appends(request()->query())->links() }}
+            {{ $empleados->appends(request()->query())->links() }}
         </div>
     @endif
 </div>

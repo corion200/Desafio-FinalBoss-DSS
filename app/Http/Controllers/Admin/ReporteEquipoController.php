@@ -9,11 +9,6 @@ use Illuminate\Support\Facades\DB;
 
 class ReporteEquipoController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin');
-    }
 
     /**
      * VER TODOS LOS REPORTES DE EQUIPO

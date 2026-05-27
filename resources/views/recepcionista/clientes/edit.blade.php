@@ -32,7 +32,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
-                <input type="text" name="telefono" value="{{ old('telefono', $cliente->telefono) }}" class="w-full px-3 py-2 border rounded-lg" required>
+                <input type="text" name="telefono" value="{{ old('telefono', $cliente->telefono) }}" placeholder="Ej: 1234-5678" class="w-full px-3 py-2 border rounded-lg" required>
             </div>
         </div>
         <div class="mb-4">

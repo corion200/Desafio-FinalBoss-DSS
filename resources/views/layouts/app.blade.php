@@ -76,6 +76,9 @@
                             <a href="{{ route('admin.reportes.index') }}" class="flex items-center px-3 py-2 text-sm rounded-md mb-1 {{ request()->routeIs('admin.reportes.*') ? 'bg-green-100 text-green-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
                                 🔧 Reportes Equipo
                             </a>
+                            <a href="{{ route('admin.empleados.index') }}" class="flex items-center px-3 py-2 text-sm rounded-md mb-1 {{ request()->routeIs('admin.empleados.*') ? 'bg-green-100 text-green-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
+                                👔 Empleados
+                            </a>
                         @elseif(Auth::user()->role === 'recepcionista')
                             <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 text-sm rounded-md mb-1 {{ request()->routeIs('dashboard') ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
                                 📊 Dashboard

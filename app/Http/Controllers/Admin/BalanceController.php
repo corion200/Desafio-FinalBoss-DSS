@@ -10,17 +10,25 @@ use Illuminate\Support\Facades\DB;
 
 class BalanceController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin');
-    }
 
     /**
      * BALANCE GENERAL - Usando Query Builder y Eloquent
      */
     public function index(Request $request)
     {
+        if ($request->filled('desde') || $request->filled('hasta')) {
+            $request->validate([
+                'desde' => ['required', 'date'],
+                'hasta' => ['required', 'date', 'after_or_equal:desde'],
+            ], [
+                'desde.required' => 'La fecha inicial es obligatoria.',
+                'hasta.required' => 'La fecha final es obligatoria.',
+                'desde.date'     => 'La fecha inicial debe ser una fecha válida.',
+                'hasta.date'     => 'La fecha final debe ser una fecha válida.',
+                'hasta.after_or_equal' => 'La fecha final (Hasta) no puede ser anterior a la fecha inicial (Desde).',
+            ]);
+        }
+
         $desde = $request->filled('desde') ? $request->desde : now()->startOfMonth()->toDateString();
         $hasta = $request->filled('hasta') ? $request->hasta : now()->toDateString();
 

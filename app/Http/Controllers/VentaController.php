@@ -13,11 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class VentaController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('role:admin,recepcionista');
-    }
 
     /**
      * FORMULARIO DE CREACIÓN DE VENTA DE PRODUCTOS
